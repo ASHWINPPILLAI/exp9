@@ -1,6 +1,6 @@
 /*
   This is your NEW backend server with User Authentication.
-  Save this file as 'server.js' in a NEW project folder.
+  Save this file as 'server.js' in your project folder.
 */
 
 const express = require('express');
