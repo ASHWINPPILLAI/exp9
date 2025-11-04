@@ -227,8 +227,8 @@
 
             // --- API Base URLs ---
             // We now have two sets of API endpoints
-            // !!! IMPORTANT !!! You MUST update this URL to match your new Render backend URL
-            const RENDER_BACKEND_URL = 'https://exp9-m8no.onrender.com'; // <-- REPLACE THIS
+            // !!! IMPORTANT !!! This URL has been updated to your new backend
+            const RENDER_BACKEND_URL = 'https://exp9-vs82.onrender.com'; // This is your new backend URL
             
             const AUTH_API_URL = `${RENDER_BACKEND_URL}/api/auth`;
             const CRM_API_URL = `${RENDER_BACKEND_URL}/api/customers`;
@@ -559,7 +559,7 @@
             }
 
             /**
-             * Renders the list of customers to the DOM. (Unchanged from previous version)
+             * Renders the list of customers to the DOM.
              */
             function renderCustomers(customers) {
                 customerList.innerHTML = '';
@@ -805,5 +805,4 @@
 
 </body>
 </html>
-
 
