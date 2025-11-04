@@ -1,0 +1,808 @@
+<!-- 
+  This is your NEW frontend with User Authentication.
+  Save this file as 'index.html' in your project folder.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Full Stack CRM</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Use Inter font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        #customer-list::-webkit-scrollbar { width: 6px; }
+        #customer-list::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 10px; }
+        #customer-list::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 10px; }
+        #customer-list::-webkit-scrollbar-thumb:hover { background: #475569; }
+        .modal-overlay { transition: opacity 0.3s ease; }
+        .modal-content { transition: all 0.3s ease; }
+        
+        /* Simple show/hide for pages */
+        .page {
+            display: none; /* All pages hidden by default */
+        }
+        .page.active {
+            display: block; /* The active page is shown */
+        }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-900">
+
+    <!-- Navbar -->
+    <nav class="bg-white shadow-md">
+        <div class="container mx-auto max-w-5xl p-4 flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-indigo-600">My CRM</h1>
+            <div>
+                <!-- This welcome message is shown when logged in -->
+                <span id="welcome-message" class="text-slate-600 mr-4 hidden"></span>
+                <!-- This button is shown when logged in -->
+                <button id="logout-button" class="text-sm font-medium text-indigo-600 hover:text-indigo-800 hidden">
+                    Log Out
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Container -->
+    <div class="container mx-auto max-w-5xl p-4 md:p-8">
+
+        <!-- 
+          PAGE 1: LOGIN 
+          This page is shown by default or when logged out
+        -->
+        <div id="login-page" class="page active">
+            <div class="mx-auto max-w-md">
+                <div class="bg-white p-8 rounded-lg shadow-md">
+                    <h2 class="text-2xl font-semibold text-center mb-6">Login to Your Account</h2>
+                    <form id="login-form">
+                        <div class="mb-4">
+                            <label for="login-identifier" class="block text-sm font-medium text-slate-700 mb-1">Username or Email</label>
+                            <input type="text" id="login-identifier" name="loginIdentifier" required class="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" placeholder="john.doe or john@example.com">
+                        </div>
+                        <div class="mb-4">
+                            <label for="login-password" class="block text-sm font-medium text-slate-700 mb-1">Password</label>
+                            <input type="password" id="login-password" name="password" required class="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" placeholder="••••••••">
+                        </div>
+                        
+                        <!-- Error message container -->
+                        <div id="login-error" class="text-red-600 text-sm text-center mb-4 hidden"></div>
+
+                        <button type="submit" id="login-submit-button" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md font-semibold shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition duration-200">
+                            Login
+                        </button>
+                    </form>
+                    <p class="text-sm text-center text-slate-600 mt-6">
+                        Don't have an account? 
+                        <a href="#" id="show-register-link" class="font-medium text-indigo-600 hover:text-indigo-800">
+                            Register here
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 
+          PAGE 2: REGISTRATION 
+          This page is shown when user clicks "Register here"
+        -->
+        <div id="register-page" class="page">
+            <div class="mx-auto max-w-md">
+                <div class="bg-white p-8 rounded-lg shadow-md">
+                    <h2 class="text-2xl font-semibold text-center mb-6">Create a New Account</h2>
+                    <form id="register-form">
+                        <div class="mb-4">
+                            <label for="register-fullName" class="block text-sm font-medium text-slate-700 mb-1">Full Name</label>
+                            <input type="text" id="register-fullName" name="fullName" required class="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" placeholder="John Doe">
+                        </div>
+                        <div class="mb-4">
+                            <label for="register-email" class="block text-sm font-medium text-slate-700 mb-1">Email</label>
+                            <input type="email" id="register-email" name="email" required class="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" placeholder="john@example.com">
+                        </div>
+                        <div class="mb-4">
+                            <label for="register-username" class="block text-sm font-medium text-slate-700 mb-1">Username</label>
+                            <input type="text" id="register-username" name="username" required class="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" placeholder="john.doe">
+                        </div>
+                        <div class="mb-4">
+                            <label for="register-password" class="block text-sm font-medium text-slate-700 mb-1">Password</label>
+                            <input type="password" id="register-password" name="password" required minlength="6" class="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" placeholder="Minimum 6 characters">
+                        </div>
+                        <div class="mb-4">
+                            <label for="register-confirmPassword" class="block text-sm font-medium text-slate-700 mb-1">Confirm Password</label>
+                            <input type="password" id="register-confirmPassword" name="confirmPassword" required class="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" placeholder="••••••••">
+                        </div>
+                        
+                        <!-- Error/Success message container -->
+                        <div id="register-message" class="text-sm text-center mb-4 hidden"></div>
+
+                        <button type="submit" id="register-submit-button" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md font-semibold shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition duration-200">
+                            Register
+                        </button>
+                    </form>
+                    <p class="text-sm text-center text-slate-600 mt-6">
+                        Already have an account? 
+                        <a href="#" id="show-login-link" class="font-medium text-indigo-600 hover:text-indigo-800">
+                            Login here
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 
+          PAGE 3: CRM DASHBOARD 
+          This page is shown only when the user is logged in
+        -->
+        <div id="crm-page" class="page">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Column 1: Add/Edit Customer Form -->
+                <div class="md:col-span-1">
+                    <div class="bg-white p-6 rounded-lg shadow-md sticky top-8">
+                        <h2 id="form-title" class="text-xl font-semibold mb-4">Add New Customer</h2>
+                        <form id="customer-form">
+                            <div class="mb-4">
+                                <label for="name" class="block text-sm font-medium text-slate-700 mb-1">Name</label>
+                                <input type="text" id="name" name="name" required class="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" placeholder="John Doe">
+                            </div>
+                            <div class="mb-4">
+                                <label for="email" class="block text-sm font-medium text-slate-700 mb-1">Email</label>
+                                <input type="email" id="email" name="email" required class="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" placeholder="john@example.com">
+                            </div>
+                            <div class="mb-4">
+                                <label for="phone" class="block text-sm font-medium text-slate-700 mb-1">Phone</label>
+                                <input type="tel" id="phone" name="phone" class="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" placeholder="(123) 456-7890">
+                            </div>
+                            <button type="submit" id="customer-submit-button" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md font-semibold shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition duration-200">
+                                Add Customer
+                            </button>
+                            <button type="button" id="customer-cancel-button" class="w-full bg-slate-500 text-white py-2 px-4 rounded-md font-semibold shadow-md hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 transition duration-200 mt-2 hidden">
+                                Cancel Edit
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Column 2: Customer List -->
+                <div class="md:col-span-2">
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h2 class="text-xl font-semibold mb-4">Your Customer List</h2>
+                        <div id="loading-spinner" class="text-center py-8">
+                            <svg class="animate-spin h-8 w-8 text-indigo-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <p class="mt-2 text-slate-500">Loading customers...</p>
+                        </div>
+                        <div id="customer-list" class="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
+                            <!-- Customer cards will be injected here -->
+                        </div>
+                        <p id="no-customers" class="text-slate-500 text-center py-8 hidden">
+                            No customers found. Add a new customer to get started!
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Delete Confirmation Modal (Shared) -->
+    <div id="delete-modal" class="modal-overlay fixed inset-0 bg-slate-900 bg-opacity-50 backdrop-blur-sm flex items-center justify-center p-4 hidden opacity-0">
+        <div class="modal-content bg-white w-full max-w-md p-6 rounded-lg shadow-xl opacity-0 translate-y-4">
+            <div class="flex items-start">
+                <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                    <svg class="h-6 w-6 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                </div>
+                <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900">Delete Customer</h3>
+                    <div class="mt-2">
+                        <p class="text-sm text-gray-500">
+                            Are you sure you want to delete this customer? This action cannot be undone.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
+                <button type="button" id="confirm-delete-btn" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm">
+                    Delete
+                </button>
+                <button type="button" id="cancel-delete-btn" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Main Application Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // --- API Base URLs ---
+            // We now have two sets of API endpoints
+            // !!! IMPORTANT !!! You MUST update this URL to match your new Render backend URL
+            const RENDER_BACKEND_URL = 'https://exp8-gm0t.onrender.com'; // <-- REPLACE THIS
+            
+            const AUTH_API_URL = `${RENDER_BACKEND_URL}/api/auth`;
+            const CRM_API_URL = `${RENDER_BACKEND_URL}/api/customers`;
+            
+            // --- Global App State ---
+            let editingCustomerId = null; 
+            let customerIdToDelete = null;
+            let localCustomerCache = [];
+            
+            // --- Page Elements ---
+            const loginPage = document.getElementById('login-page');
+            const registerPage = document.getElementById('register-page');
+            const crmPage = document.getElementById('crm-page');
+            const pages = [loginPage, registerPage, crmPage];
+
+            // --- Navbar Elements ---
+            const welcomeMessage = document.getElementById('welcome-message');
+            const logoutButton = document.getElementById('logout-button');
+            
+            // --- Login Form ---
+            const loginForm = document.getElementById('login-form');
+            const loginIdentifierInput = document.getElementById('login-identifier');
+            const loginPasswordInput = document.getElementById('login-password');
+            const loginSubmitButton = document.getElementById('login-submit-button');
+            const loginError = document.getElementById('login-error');
+            const showRegisterLink = document.getElementById('show-register-link');
+
+            // --- Register Form ---
+            const registerForm = document.getElementById('register-form');
+            const registerFullNameInput = document.getElementById('register-fullName');
+            const registerEmailInput = document.getElementById('register-email');
+            const registerUsernameInput = document.getElementById('register-username');
+            const registerPasswordInput = document.getElementById('register-password');
+            const registerConfirmPasswordInput = document.getElementById('register-confirmPassword');
+            const registerSubmitButton = document.getElementById('register-submit-button');
+            const registerMessage = document.getElementById('register-message');
+            const showLoginLink = document.getElementById('show-login-link');
+            
+            // --- CRM Form Elements ---
+            const customerForm = document.getElementById('customer-form');
+            const formTitle = document.getElementById('form-title');
+            const nameInput = document.getElementById('name');
+            const emailInput = document.getElementById('email');
+            const phoneInput = document.getElementById('phone');
+            const customerSubmitButton = document.getElementById('customer-submit-button');
+            const customerCancelButton = document.getElementById('customer-cancel-button');
+            
+            // --- CRM List Elements ---
+            const customerList = document.getElementById('customer-list');
+            const loadingSpinner = document.getElementById('loading-spinner');
+            const noCustomersMessage = document.getElementById('no-customers');
+
+            // --- Modal DOM Elements ---
+            const deleteModal = document.getElementById('delete-modal');
+            const modalContent = deleteModal.querySelector('.modal-content');
+            const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+            const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
+
+
+            // --- === CORE FUNCTIONS === ---
+
+            /**
+             * Gets the saved JWT token from localStorage.
+             */
+            function getToken() {
+                return localStorage.getItem('crm-token');
+            }
+
+            /**
+             * Saves the JWT token to localStorage.
+             */
+            function saveToken(token) {
+                localStorage.setItem('crm-token', token);
+            }
+
+            /**
+             * Removes the JWT token and user info from localStorage.
+             */
+            function removeToken() {
+                localStorage.removeItem('crm-token');
+                localStorage.removeItem('crm-user');
+            }
+
+            /**
+             * Gets user info (like fullName) from localStorage.
+             */
+            function getUser() {
+                const user = localStorage.getItem('crm-user');
+                return user ? JSON.parse(user) : null;
+            }
+
+            /**
+             * Saves user info to localStorage.
+             */
+            function saveUser(user) {
+                localStorage.setItem('crm-user', JSON.stringify(user));
+            }
+
+
+            /**
+             * Simple page navigation.
+             * @param {string} pageId - The ID of the page to show.
+             */
+            function showPage(pageId) {
+                pages.forEach(page => {
+                    if (page.id === pageId) {
+                        page.classList.add('active');
+                    } else {
+                        page.classList.remove('active');
+                    }
+                });
+            }
+
+            /**
+             * Updates the UI based on login state.
+             */
+            function updateUIForLoginState() {
+                const token = getToken();
+                const user = getUser();
+
+                if (token && user) {
+                    // --- User is LOGGED IN ---
+                    // Show CRM page, hide auth pages
+                    showPage('crm-page');
+                    
+                    // Show navbar welcome/logout
+                    welcomeMessage.textContent = `Welcome, ${user.fullName}!`;
+                    welcomeMessage.classList.remove('hidden');
+                    logoutButton.classList.remove('hidden');
+
+                    // Fetch customer data
+                    fetchAndRenderCustomers();
+                } else {
+                    // --- User is LOGGED OUT ---
+                    // Show Login page, hide others
+                    showPage('login-page');
+                    
+                    // Hide navbar welcome/logout
+                    welcomeMessage.classList.add('hidden');
+                    logoutButton.classList.add('hidden');
+
+                    // Clear any old customer data
+                    customerList.innerHTML = '';
+                    noCustomersMessage.classList.add('hidden');
+                    loadingSpinner.classList.add('hidden');
+                }
+            }
+
+
+            // --- === API CALLS === ---
+
+            // --- AUTH API ---
+
+            /**
+             * Handles the Login form submission.
+             */
+            async function handleLogin(e) {
+                e.preventDefault();
+                loginError.classList.add('hidden');
+                loginSubmitButton.disabled = true;
+                loginSubmitButton.textContent = 'Logging in...';
+
+                try {
+                    const response = await fetch(`${AUTH_API_URL}/login`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            loginIdentifier: loginIdentifierInput.value,
+                            password: loginPasswordInput.value
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(data.message || 'Login failed.');
+                    }
+
+                    // --- LOGIN SUCCESS ---
+                    saveToken(data.token);
+                    saveUser(data.user);
+                    
+                    loginForm.reset();
+                    updateUIForLoginState(); // This will show the CRM page
+
+                } catch (error) {
+                    loginError.textContent = error.message;
+                    loginError.classList.remove('hidden');
+                } finally {
+                    loginSubmitButton.disabled = false;
+                    loginSubmitButton.textContent = 'Login';
+                }
+            }
+            
+            /**
+             * Handles the Registration form submission.
+             */
+            async function handleRegister(e) {
+                e.preventDefault();
+                registerMessage.classList.add('hidden');
+
+                // --- Frontend Validation ---
+                const password = registerPasswordInput.value;
+                const confirmPassword = registerConfirmPasswordInput.value;
+                
+                if (password.length < 6) {
+                    registerMessage.textContent = 'Password must be at least 6 characters long.';
+                    registerMessage.className = 'text-red-600 text-sm text-center mb-4';
+                    registerMessage.classList.remove('hidden');
+                    return;
+                }
+
+                if (password !== confirmPassword) {
+                    registerMessage.textContent = 'Passwords do not match.';
+                    registerMessage.className = 'text-red-600 text-sm text-center mb-4';
+                    registerMessage.classList.remove('hidden');
+                    return;
+                }
+                
+                registerSubmitButton.disabled = true;
+                registerSubmitButton.textContent = 'Registering...';
+
+                try {
+                    const response = await fetch(`${AUTH_API_URL}/register`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            fullName: registerFullNameInput.value,
+                            email: registerEmailInput.value,
+                            username: registerUsernameInput.value,
+                            password: password
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(data.message || 'Registration failed.');
+                    }
+
+                    // --- REGISTRATION SUCCESS ---
+                    registerForm.reset();
+                    registerMessage.textContent = 'Registration successful! Please login.';
+                    registerMessage.className = 'text-green-600 text-sm text-center mb-4'; // Success color
+                    registerMessage.classList.remove('hidden');
+                    
+                    // Automatically switch to login page after 2 seconds
+                    setTimeout(() => {
+                        showPage('login-page');
+                        registerMessage.classList.add('hidden');
+                    }, 2000);
+
+                } catch (error) {
+                    registerMessage.textContent = error.message;
+                    registerMessage.className = 'text-red-600 text-sm text-center mb-4'; // Error color
+                    registerMessage.classList.remove('hidden');
+                } finally {
+                    registerSubmitButton.disabled = false;
+                    registerSubmitButton.textContent = 'Register';
+                }
+            }
+
+            /**
+             * Handles the Logout button click.
+             */
+            function handleLogout() {
+                removeToken();
+                updateUIForLoginState();
+            }
+
+
+            // --- CRM API (Protected) ---
+            // These functions will now include the auth token
+
+            /**
+             * Creates the authorization headers for protected requests.
+             */
+            function getAuthHeaders() {
+                const token = getToken();
+                if (!token) {
+                    // This should not happen if UI is correct, but as a fallback
+                    handleLogout(); // Force logout
+                    throw new Error('No authentication token found. Please log in.');
+                }
+                return {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                };
+            }
+
+
+            /**
+             * Fetches all customers from the API and renders them.
+             */
+            async function fetchAndRenderCustomers() {
+                loadingSpinner.classList.remove('hidden');
+                noCustomersMessage.classList.add('hidden');
+                customerList.innerHTML = '';
+
+                try {
+                    const headers = getAuthHeaders();
+                    const response = await fetch(CRM_API_URL, { headers });
+
+                    if (response.status === 401 || response.status === 403) {
+                        // Token is invalid or expired
+                        handleLogout();
+                        return;
+                    }
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    const customers = await response.json();
+                    localCustomerCache = customers; // Store for editing
+                    renderCustomers(customers);
+
+                } catch (error) {
+                    console.error("Error fetching customers:", error.message);
+                    if (error.message.includes('No authentication token')) {
+                         customerList.innerHTML = `<p class="text-red-500 text-center">Please log in to view customers.</p>`;
+                    } else {
+                         customerList.innerHTML = `<p class="text-red-500 text-center">Error loading customers.</p>`;
+                    }
+                } finally {
+                    loadingSpinner.classList.add('hidden');
+                }
+            }
+
+            /**
+             * Renders the list of customers to the DOM. (Unchanged from previous version)
+             */
+            function renderCustomers(customers) {
+                customerList.innerHTML = '';
+                if (customers.length === 0) {
+                    noCustomersMessage.classList.remove('hidden');
+                } else {
+                    noCustomersMessage.classList.add('hidden');
+                    customers.forEach(customer => {
+                        const card = document.createElement('div');
+                        card.className = 'border border-slate-200 p-4 rounded-lg shadow-sm transition-all duration-300 hover:shadow-md bg-slate-50';
+                        // Note: We use customer._id now, as MongoDB uses _id
+                        card.innerHTML = `
+                            <div class="flex justify-between items-start">
+                                <div class="flex-1 min-w-0">
+                                    <h3 class="text-lg font-semibold text-indigo-700 truncate">${escapeHTML(customer.name)}</h3>
+                                    <p class="text-sm text-slate-600 truncate">${escapeHTML(customer.email)}</p>
+                                    <p class="text-sm text-slate-500 mt-1 truncate">${escapeHTML(customer.phone || 'N/A')}</p>
+                                </div>
+                                <div class="flex-shrink-0 flex items-center ml-4">
+                                    <button data-id="${customer._id}" class="edit-btn text-slate-400 hover:text-indigo-600 transition-colors duration-200 p-1">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                                    </button>
+                                    <button data-id="${customer._id}" class="delete-btn text-slate-400 hover:text-red-600 transition-colors duration-200 p-1 ml-1">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                        customerList.appendChild(card);
+                    });
+                }
+            }
+
+            /**
+             * Handles the Customer form submission (Add or Update).
+             */
+            async function handleCustomerFormSubmit(e) {
+                e.preventDefault();
+
+                const customer = {
+                    name: nameInput.value,
+                    email: emailInput.value,
+                    phone: phoneInput.value,
+                };
+
+                customerSubmitButton.disabled = true;
+
+                try {
+                    const headers = getAuthHeaders();
+                    let response;
+                    if (editingCustomerId) {
+                        // Update existing customer
+                        customerSubmitButton.textContent = 'Updating...';
+                        response = await fetch(`${CRM_API_URL}/${editingCustomerId}`, {
+                            method: 'PUT',
+                            headers: headers,
+                            body: JSON.stringify(customer)
+                        });
+                    } else {
+                        // Add new customer
+                        customerSubmitButton.textContent = 'Adding...';
+                        response = await fetch(CRM_API_URL, {
+                            method: 'POST',
+                            headers: headers,
+                            body: JSON.stringify(customer)
+                        });
+                    }
+                    
+                    if (response.status === 401 || response.status === 403) {
+                        handleLogout();
+                        return;
+                    }
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    resetCustomerForm();
+                    fetchAndRenderCustomers(); // Refresh the list
+                    
+                } catch (error) {
+                    console.error("Error saving customer: ", error.message);
+                } finally {
+                    customerSubmitButton.disabled = false;
+                    if (editingCustomerId) {
+                        resetCustomerForm();
+                    } else {
+                        customerSubmitButton.textContent = 'Add Customer';
+                        customerForm.reset();
+                    }
+                }
+            }
+
+            /**
+             * Handles clicks on the customer list (Edit and Delete).
+             */
+            function handleCustomerListClick(e) {
+                const editButton = e.target.closest('.edit-btn');
+                const deleteButton = e.target.closest('.delete-btn');
+
+                if (editButton) {
+                    const customerId = editButton.dataset.id;
+                    const customer = localCustomerCache.find(c => c._id === customerId);
+                    if (customer) {
+                        populateFormForEdit(customer);
+                    }
+                } else if (deleteButton) {
+                    const customerId = deleteButton.dataset.id;
+                    showDeleteModal(customerId);
+                }
+            }
+
+            /**
+             * Fills the form for editing.
+             */
+            function populateFormForEdit(customer) {
+                editingCustomerId = customer._id; // Use _id from MongoDB
+                nameInput.value = customer.name;
+                emailInput.value = customer.email;
+                phoneInput.value = customer.phone;
+
+                formTitle.textContent = 'Edit Customer';
+                customerSubmitButton.textContent = 'Update Customer';
+                customerCancelButton.classList.remove('hidden');
+                
+                customerForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+
+            /**
+             * Resets the customer form.
+             */
+            function resetCustomerForm() {
+                editingCustomerId = null;
+                customerForm.reset();
+                formTitle.textContent = 'Add New Customer';
+                customerSubmitButton.textContent = 'Add Customer';
+                customerCancelButton.classList.add('hidden');
+                customerSubmitButton.disabled = false;
+            }
+
+            /**
+             * Shows the delete modal.
+             */
+            function showDeleteModal(id) {
+                customerIdToDelete = id;
+                deleteModal.classList.remove('hidden');
+                setTimeout(() => {
+                    deleteModal.classList.remove('opacity-0');
+                    modalContent.classList.remove('opacity-0', 'translate-y-4');
+                }, 10);
+            }
+
+            /**
+             * Hides the delete modal.
+             */
+            function hideDeleteModal() {
+                deleteModal.classList.add('opacity-0');
+                modalContent.classList.add('opacity-0', 'translate-y-4');
+                setTimeout(() => {
+                    deleteModal.classList.add('hidden');
+                    customerIdToDelete = null;
+                }, 300);
+            }
+
+            /**
+             * Performs the customer deletion.
+             */
+            async function performDelete() {
+                if (!customerIdToDelete) return;
+
+                confirmDeleteBtn.disabled = true;
+                
+                try {
+                    const headers = getAuthHeaders();
+                    const response = await fetch(`${CRM_API_URL}/${customerIdToDelete}`, {
+                        method: 'DELETE',
+                        headers: headers
+                    });
+
+                    if (response.status === 401 || response.status === 403) {
+                        handleLogout();
+                        return;
+                    }
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    hideDeleteModal();
+                    fetchAndRenderCustomers(); // Refresh the list
+                    
+                } catch (error) {
+                    console.error("Error deleting document: ", error.message);
+                } finally {
+                    confirmDeleteBtn.disabled = false;
+                }
+            }
+
+            /**
+             * Escapes HTML.
+             */
+            function escapeHTML(str) {
+                if (typeof str !== 'string' || !str) return '';
+                return str.replace(/[&<>"']/g, function(match) {
+                    const escape = {'&': '&amp;','<': '&lt;','>': '&gt;','"': '&quot;',"'": '&#39;'};
+                    return escape[match];
+                });
+            }
+
+            // --- === EVENT LISTENERS === ---
+            
+            // Auth Listeners
+            loginForm.addEventListener('submit', handleLogin);
+            registerForm.addEventListener('submit', handleRegister);
+            logoutButton.addEventListener('click', handleLogout);
+            showRegisterLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                showPage('register-page');
+            });
+            showLoginLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                showPage('login-page');
+            });
+
+            // CRM Listeners
+            customerForm.addEventListener('submit', handleCustomerFormSubmit);
+            customerList.addEventListener('click', handleCustomerListClick);
+            customerCancelButton.addEventListener('click', resetCustomerForm);
+            
+            // Modal Listeners
+            confirmDeleteBtn.addEventListener('click', performDelete);
+            cancelDeleteBtn.addEventListener('click', hideDeleteModal);
+            deleteModal.addEventListener('click', (e) => {
+                if (e.target === deleteModal) {
+                    hideDeleteModal();
+                }
+            });
+
+            // --- === APP INITIALIZATION === ---
+            // Check login state as soon as the app loads
+            updateUIForLoginState();
+
+        });
+    </script>
+
+</body>
+</html>
+
